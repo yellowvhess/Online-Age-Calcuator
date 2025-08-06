@@ -87,6 +87,25 @@
             font-size: 14px;
             display: none;
         }
+        
+        /* Стиль для мобильного ввода даты */
+        .date-input-container {
+            position: relative;
+        }
+        
+        .date-input-mobile {
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .date-input-desktop {
+                display: none;
+            }
+            
+            .date-input-mobile {
+                display: block;
+            }
+        }
     </style>
 </head>
 <body>
@@ -100,10 +119,14 @@
             <div id="nameError" class="error">Пожалуйста, введите ваше имя</div>
         </div>
         
-        <div class="input-group">
+        <div class="input-group date-input-container">
             <label for="birthdate">Дата рождения:</label>
-            <input type="date" id="birthdate">
-            <div id="dateError" class="error">Пожалуйста, выберите дату рождения</div>
+            <!-- Стандартный ввод для ПК -->
+            <input type="date" id="birthdate" class="date-input-desktop">
+            <!-- Альтернативный ввод для мобильных -->
+            <input type="text" id="birthdate-mobile" class="date-input-mobile" 
+                   placeholder="ДД.ММ.ГГГГ" pattern="\d{2}\.\d{2}\.\d{4}">
+            <div id="dateError" class="error">Пожалуйста, введите корректную дату (ДД.ММ.ГГГГ)</div>
         </div>
         
         <button id="calculateBtn">Рассчитать возраст</button>
@@ -114,7 +137,14 @@
     <script>
         document.getElementById('calculateBtn').addEventListener('click', function() {
             const name = document.getElementById('name').value.trim();
-            const birthdate = document.getElementById('birthdate').value;
+            let birthdate;
+            
+            // Определяем, какое поле даты использовать
+            if (window.innerWidth <= 768) {
+                birthdate = document.getElementById('birthdate-mobile').value;
+            } else {
+                birthdate = document.getElementById('birthdate').value;
+            }
             
             // Сбрасываем предыдущие ошибки
             document.getElementById('nameError').style.display = 'none';
@@ -135,8 +165,25 @@
             
             if (!isValid) return;
             
-            // Рассчитываем возраст
-            const birthDate = new Date(birthdate);
+            // Преобразуем дату в формат Date
+            let birthDate;
+            if (window.innerWidth <= 768) {
+                // Обработка мобильного ввода (ДД.ММ.ГГГГ)
+                const parts = birthdate.split('.');
+                if (parts.length !== 3 || isNaN(parts[0]) || isNaN(parts[1]) || isNaN(parts[2])) {
+                    document.getElementById('dateError').style.display = 'block';
+                    return;
+                }
+                const day = parseInt(parts[0], 10);
+                const month = parseInt(parts[1], 10) - 1; // Месяцы в JS от 0 до 11
+                const year = parseInt(parts[2], 10);
+                
+                birthDate = new Date(year, month, day);
+            } else {
+                // Обработка стандартного ввода
+                birthDate = new Date(birthdate);
+            }
+            
             const today = new Date();
             
             if (birthDate > today) {
@@ -184,6 +231,23 @@
                 (number % 100 > 4 && number % 100 < 20) ? 2 : cases[(number % 10 < 5) ? number % 10 : 5]
             ];  
         }
+        
+        // Добавляем маску для ввода даты на мобильных
+        document.getElementById('birthdate-mobile')?.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            
+            if (value.length > 8) {
+                value = value.substring(0, 8);
+            }
+            
+            if (value.length > 4) {
+                value = value.substring(0, 2) + '.' + value.substring(2, 4) + '.' + value.substring(4);
+            } else if (value.length > 2) {
+                value = value.substring(0, 2) + '.' + value.substring(2);
+            }
+            
+            e.target.value = value;
+        });
     </script>
 </body>
 </html>
