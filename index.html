@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta name="google-site-verification" content="rd3e2zvgvc_FYIuSOG01MEmWKf7cFx-92v6ptVrp_tM" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Калькулятор возраста</title>
@@ -15,6 +14,8 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            position: relative;
+            padding-bottom: 60px;
         }
         
         .calculator {
@@ -24,6 +25,8 @@
             padding: 30px;
             width: 100%;
             max-width: 400px;
+            position: relative;
+            z-index: 1;
         }
         
         h1 {
@@ -89,7 +92,6 @@
             display: none;
         }
         
-        /* Стиль для мобильного ввода даты */
         .date-input-container {
             position: relative;
         }
@@ -102,10 +104,133 @@
             .date-input-desktop {
                 display: none;
             }
-            
             .date-input-mobile {
                 display: block;
             }
+        }
+        
+        .support-btn {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 12px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            transition: all 0.3s;
+            width: auto;
+            white-space: nowrap;
+        }
+        
+        @media (min-width: 768px) {
+            .support-btn {
+                left: auto;
+                right: 20px;
+                transform: none;
+            }
+        }
+        
+        .support-btn:hover {
+            background-color: #c0392b;
+            transform: translateY(-2px) translateX(-50%);
+        }
+        
+        @media (min-width: 768px) {
+            .support-btn:hover {
+                transform: translateY(-2px);
+            }
+        }
+        
+        .support-panel {
+            position: fixed;
+            bottom: -300px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            max-width: 90%;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 999;
+            transition: bottom 0.3s ease-out;
+        }
+        
+        @media (min-width: 768px) {
+            .support-panel {
+                left: auto;
+                right: 20px;
+                transform: none;
+            }
+        }
+        
+        .support-panel.show {
+            bottom: 80px;
+        }
+        
+        .support-panel p {
+            margin: 0 0 15px;
+            color: #2c3e50;
+            padding-right: 25px;
+        }
+        
+        .support-panel .email-link {
+            color: #3498db;
+            text-decoration: none;
+            cursor: pointer;
+            display: inline-block;
+            padding: 5px 0;
+        }
+        
+        .support-panel .email-link:hover {
+            text-decoration: underline;
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 24px;
+            height: 24px;
+            background: #f1f1f1;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            color: #7f8c8d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+        
+        .close-btn:hover {
+            background: #e0e0e0;
+        }
+        
+        .copy-notification {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            z-index: 1001;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        
+        .copy-notification.show {
+            opacity: 1;
         }
     </style>
 </head>
@@ -122,9 +247,7 @@
         
         <div class="input-group date-input-container">
             <label for="birthdate">Дата рождения:</label>
-            <!-- Стандартный ввод для ПК -->
             <input type="date" id="birthdate" class="date-input-desktop">
-            <!-- Альтернативный ввод для мобильных -->
             <input type="text" id="birthdate-mobile" class="date-input-mobile" 
                    placeholder="ДД.ММ.ГГГГ" pattern="\d{2}\.\d{2}\.\d{4}">
             <div id="dateError" class="error">Пожалуйста, введите корректную дату (ДД.ММ.ГГГГ)</div>
@@ -135,23 +258,33 @@
         <div id="result"></div>
     </div>
 
+    <button class="support-btn" id="supportBtn">Обратиться в поддержку</button>
+    
+    <div class="support-panel" id="supportPanel">
+        <button class="close-btn" id="closeSupportPanel" title="Закрыть">
+            <span style="margin-bottom: 2px;">×</span>
+        </button>
+        <p>Если у вас возникла какая-то ошибка, обратитесь к нам по почте:</p>
+        <p><span class="email-link" id="emailLink">wertq6306@gmail.com</span></p>
+    </div>
+
+    <div class="copy-notification" id="copyNotification">Скопировано</div>
+
     <script>
+        // Функционал калькулятора
         document.getElementById('calculateBtn').addEventListener('click', function() {
             const name = document.getElementById('name').value.trim();
             let birthdate;
             
-            // Определяем, какое поле даты использовать
             if (window.innerWidth <= 768) {
                 birthdate = document.getElementById('birthdate-mobile').value;
             } else {
                 birthdate = document.getElementById('birthdate').value;
             }
             
-            // Сбрасываем предыдущие ошибки
             document.getElementById('nameError').style.display = 'none';
             document.getElementById('dateError').style.display = 'none';
             
-            // Проверяем ввод
             let isValid = true;
             
             if (!name) {
@@ -166,22 +299,18 @@
             
             if (!isValid) return;
             
-            // Преобразуем дату в формат Date
             let birthDate;
             if (window.innerWidth <= 768) {
-                // Обработка мобильного ввода (ДД.ММ.ГГГГ)
                 const parts = birthdate.split('.');
                 if (parts.length !== 3 || isNaN(parts[0]) || isNaN(parts[1]) || isNaN(parts[2])) {
                     document.getElementById('dateError').style.display = 'block';
                     return;
                 }
                 const day = parseInt(parts[0], 10);
-                const month = parseInt(parts[1], 10) - 1; // Месяцы в JS от 0 до 11
+                const month = parseInt(parts[1], 10) - 1;
                 const year = parseInt(parts[2], 10);
-                
                 birthDate = new Date(year, month, day);
             } else {
-                // Обработка стандартного ввода
                 birthDate = new Date(birthdate);
             }
             
@@ -196,10 +325,8 @@
             let months = today.getMonth() - birthDate.getMonth();
             let days = today.getDate() - birthDate.getDate();
             
-            // Корректируем, если день рождения еще не наступил
             if (days < 0) {
                 months--;
-                // Получаем последний день предыдущего месяца
                 const lastDay = new Date(today.getFullYear(), today.getMonth(), 0).getDate();
                 days += lastDay;
             }
@@ -209,7 +336,6 @@
                 months += 12;
             }
             
-            // Формируем результат
             const resultText = `
                 <strong>${name}, ваш точный возраст:</strong><br><br>
                 ${years} ${getRussianWord(years, ['год', 'года', 'лет'])}, 
@@ -233,23 +359,54 @@
             ];  
         }
         
-        // Добавляем маску для ввода даты на мобильных
         document.getElementById('birthdate-mobile')?.addEventListener('input', function(e) {
             let value = e.target.value.replace(/\D/g, '');
-            
-            if (value.length > 8) {
-                value = value.substring(0, 8);
-            }
-            
+            if (value.length > 8) value = value.substring(0, 8);
             if (value.length > 4) {
                 value = value.substring(0, 2) + '.' + value.substring(2, 4) + '.' + value.substring(4);
             } else if (value.length > 2) {
                 value = value.substring(0, 2) + '.' + value.substring(2);
             }
-            
             e.target.value = value;
+        });
+        
+        // Функционал поддержки
+        document.getElementById('supportBtn').addEventListener('click', function() {
+            document.getElementById('supportPanel').classList.add('show');
+        });
+        
+        document.getElementById('closeSupportPanel').addEventListener('click', function(e) {
+            e.stopPropagation();
+            document.getElementById('supportPanel').classList.remove('show');
+        });
+        
+        document.getElementById('emailLink').addEventListener('click', function(e) {
+            e.preventDefault();
+            const email = 'wertq6306@gmail.com';
+            
+            // Создаем временный элемент для копирования
+            const tempInput = document.createElement('input');
+            tempInput.value = email;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+            
+            // Показываем уведомление
+            const notification = document.getElementById('copyNotification');
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 2000);
+        });
+        
+        document.addEventListener('click', function(e) {
+            const supportPanel = document.getElementById('supportPanel');
+            const supportBtn = document.getElementById('supportBtn');
+            if (!supportPanel.contains(e.target) && e.target !== supportBtn && supportPanel.classList.contains('show')) {
+                supportPanel.classList.remove('show');
+            }
         });
     </script>
 </body>
 </html>
-
