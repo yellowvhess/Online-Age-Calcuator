@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Калькулятор возраста</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .calculator {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        
+        input:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+        
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .error {
+            color: #e74c3c;
+            margin-top: 5px;
+            font-size: 14px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <h1>Калькулятор возраста</h1>
+        <p style="text-align: center; color: #7f8c8d;">Узнайте точно, сколько вам лет, месяцев и дней!</p>
+        
+        <div class="input-group">
+            <label for="name">Ваше имя:</label>
+            <input type="text" id="name" placeholder="Например: Михаил">
+            <div id="nameError" class="error">Пожалуйста, введите ваше имя</div>
+        </div>
+        
+        <div class="input-group">
+            <label for="birthdate">Дата рождения:</label>
+            <input type="date" id="birthdate">
+            <div id="dateError" class="error">Пожалуйста, выберите дату рождения</div>
+        </div>
+        
+        <button id="calculateBtn">Рассчитать возраст</button>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        document.getElementById('calculateBtn').addEventListener('click', function() {
+            const name = document.getElementById('name').value.trim();
+            const birthdate = document.getElementById('birthdate').value;
+            
+            // Сбрасываем предыдущие ошибки
+            document.getElementById('nameError').style.display = 'none';
+            document.getElementById('dateError').style.display = 'none';
+            
+            // Проверяем ввод
+            let isValid = true;
+            
+            if (!name) {
+                document.getElementById('nameError').style.display = 'block';
+                isValid = false;
+            }
+            
+            if (!birthdate) {
+                document.getElementById('dateError').style.display = 'block';
+                isValid = false;
+            }
+            
+            if (!isValid) return;
+            
+            // Рассчитываем возраст
+            const birthDate = new Date(birthdate);
+            const today = new Date();
+            
+            if (birthDate > today) {
+                showResult(`${name}, вы из будущего? 😮`);
+                return;
+            }
+            
+            let years = today.getFullYear() - birthDate.getFullYear();
+            let months = today.getMonth() - birthDate.getMonth();
+            let days = today.getDate() - birthDate.getDate();
+            
+            // Корректируем, если день рождения еще не наступил
+            if (days < 0) {
+                months--;
+                // Получаем последний день предыдущего месяца
+                const lastDay = new Date(today.getFullYear(), today.getMonth(), 0).getDate();
+                days += lastDay;
+            }
+            
+            if (months < 0) {
+                years--;
+                months += 12;
+            }
+            
+            // Формируем результат
+            const resultText = `
+                <strong>${name}, ваш точный возраст:</strong><br><br>
+                ${years} ${getRussianWord(years, ['год', 'года', 'лет'])}, 
+                ${months} ${getRussianWord(months, ['месяц', 'месяца', 'месяцев'])}, 
+                ${days} ${getRussianWord(days, ['день', 'дня', 'дней'])}
+            `;
+            
+            showResult(resultText);
+        });
+        
+        function showResult(text) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = text;
+            resultDiv.style.display = 'block';
+        }
+        
+        function getRussianWord(number, words) {  
+            const cases = [2, 0, 1, 1, 1, 2];  
+            return words[
+                (number % 100 > 4 && number % 100 < 20) ? 2 : cases[(number % 10 < 5) ? number % 10 : 5]
+            ];  
+        }
+    </script>
+</body>
+</html>
