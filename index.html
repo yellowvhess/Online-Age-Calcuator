@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background: #fffacd; /* Светло-жёлтый фон */
             margin: 0;
             padding: 20px;
             display: flex;
@@ -19,7 +19,8 @@
         }
         
         .calculator {
-            background: white;
+            background: #1e90ff; /* Синий фон для калькулятора */
+            color: white; /* Белый текст для лучшей читаемости на синем фоне */
             border-radius: 15px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             padding: 30px;
@@ -30,7 +31,7 @@
         }
         
         h1 {
-            color: #2c3e50;
+            color: white; /* Белый цвет заголовка */
             text-align: center;
             margin-bottom: 20px;
         }
@@ -43,7 +44,7 @@
             display: block;
             margin-bottom: 8px;
             font-weight: bold;
-            color: #2c3e50;
+            color: white; /* Белый цвет текста */
         }
         
         input {
@@ -53,6 +54,7 @@
             border-radius: 8px;
             font-size: 16px;
             box-sizing: border-box;
+            background: #f8f9fa; /* Светлый фон для полей ввода */
         }
         
         input:focus {
@@ -80,13 +82,14 @@
         #result {
             margin-top: 20px;
             padding: 15px;
-            background: #f8f9fa;
+            background: rgba(255, 255, 255, 0.2); /* Полупрозрачный белый фон для результата */
             border-radius: 8px;
             display: none;
+            color: white;
         }
         
         .error {
-            color: #e74c3c;
+            color: #ffcccb; /* Светло-красный цвет для ошибок */
             margin-top: 5px;
             font-size: 14px;
             display: none;
@@ -237,7 +240,7 @@
 <body>
     <div class="calculator">
         <h1>Калькулятор возраста</h1>
-        <p style="text-align: center; color: #7f8c8d;">Узнайте точно, сколько вам лет, месяцев и дней!</p>
+        <p style="text-align: center; color: #e6e6e6;">Узнайте точно, сколько вам лет, месяцев и дней!</p>
         
         <div class="input-group">
             <label for="name">Ваше имя:</label>
